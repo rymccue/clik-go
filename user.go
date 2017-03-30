@@ -24,5 +24,5 @@ type Users []User
 
 type UserQueue []struct {
 	User
-	Image
+	ImageUrl
 }

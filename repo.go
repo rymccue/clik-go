@@ -104,7 +104,7 @@ func DbGetUserQueue(id int) (*UserQueue, error) {
 		So, instead we insert the value using Sprintf ahead of time.
 	*/
 	stmt, err := db.PrepareNamed(fmt.Sprintf(`
-	select users.*, images.*
+	select users.*, images.url
 	from users join images
 	on users.id = images.user_id
 	where users.id not in (
