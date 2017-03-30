@@ -21,7 +21,7 @@ var routes = Routes{
 	Route{
 		"UserGet",
 		"GET",
-		"/users/{id}",
+		"/v1/users/{id}",
 		UserGet,
 	},
 
@@ -31,7 +31,7 @@ var routes = Routes{
 	Route{
 		"UserCreate",
 		"POST",
-		"/users",
+		"/v1/users",
 		UserCreate,
 	},
 
@@ -43,7 +43,7 @@ var routes = Routes{
 	Route{
 		"UserEdit",
 		"POST",
-		"/users/{id}/edit",
+		"/v1/users/{id}/edit",
 		UserEdit,
 	},
 
@@ -54,7 +54,7 @@ var routes = Routes{
 	Route{
 		"UserQueue",
 		"GET",
-		"/users/{id}/queue",
+		"/v1/users/{id}/queue",
 		UserGetQueue,
 	},
 
@@ -65,7 +65,7 @@ var routes = Routes{
 	Route{
 		"UserMatches",
 		"GET",
-		"/users/{id}/matches",
+		"/v1/users/{id}/matches",
 		UserGetMatches,
 	},
 
@@ -78,7 +78,7 @@ var routes = Routes{
 	Route{
 		"DecisionCreate",
 		"POST",
-		"/decisions/{from_user_id}",
+		"/v1/decisions/{from_user_id}",
 		DecisionCreate,
 	},
 
@@ -88,7 +88,7 @@ var routes = Routes{
 	Route{
 		"MatchDelete",
 		"DEL",
-		"matches/{id}",
+		"/v1/matches/{id}",
 		MatchDelete,
 	},
 }
