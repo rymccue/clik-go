@@ -8,6 +8,7 @@ import (
 
 	"golang.org/x/crypto/scrypt"
 
+	"github.com/fatih/structs"
 	_ "github.com/lib/pq"
 
 	"github.com/jmoiron/sqlx"
@@ -56,13 +57,19 @@ func HashPassword(password string, salt string) string {
 func DbCreateUser(user *User) error {
 	user.Salt = GenerateSalt()
 	user.Password = HashPassword(user.Password, user.Salt)
-	row := db.QueryRowx(`
+	_, err := db.NamedExec(`
 	insert into users
 	(age, birthday, career, email, start_age, end_age, gender, info, first_name, last_name, looking_for, school, password, salt)
 	values
-	($1, to_date($2, 'YYYY-MM-DD'), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-	returning id
-	`, user.Age, user.Birthday, user.Career, user.Email, user.StartAge, user.EndAge, user.Gender, user.Info, user.FirstName, user.LastName, user.LookingFor, user.School, user.Password, user.Salt)
-	err := row.Scan(&user.Id)
+	(:Age, to_date(:Birthday, 'YYYY-MM-DD'), :Career, :Email, :StartAge, :EndAge, :Gender, :Info, :FirstName, :LastName, :LookingFor, :School, :Password, :Salt)
+	`, structs.Map(user))
+
+	if err != nil {
+		return err
+	}
+
+	tx := db.MustBegin()
+	err = tx.Get(user, `select * from users where email = $1`, user.Email)
+
 	return err
 }
