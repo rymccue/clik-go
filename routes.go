@@ -21,7 +21,7 @@ var routes = Routes{
 	Route{
 		"UserGet",
 		"GET",
-		"users/{id}",
+		"/users/{id}",
 		UserGet,
 	},
 

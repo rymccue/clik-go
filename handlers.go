@@ -5,9 +5,44 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gorilla/mux"
+
+	"strconv"
 )
 
+type Error struct {
+	Err string `json:"error"`
+}
+
+func writeError(errString string, respCode int, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(respCode) // unprocessable entity
+	if err := json.NewEncoder(w).Encode(Error{errString}); err != nil {
+		panic(err)
+	}
+}
+
 func UserGet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		writeError("Invalid id.", http.StatusBadRequest, w)
+		return
+	}
+
+	user, err := DbGetUser(id)
+	if err != nil {
+		writeError("Could not find user.", http.StatusNotFound, w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(user); err != nil {
+		panic(err)
+	}
 }
 
 func UserCreate(w http.ResponseWriter, r *http.Request) {
@@ -21,20 +56,12 @@ func UserCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.Unmarshal(body, &user); err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(422) // unprocessable entity
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
+		writeError(err.Error(), http.StatusUnprocessableEntity, w)
 		return
 	}
 
 	if err := DbCreateUser(&user); err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(500) // unprocessable entity
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
+		writeError(err.Error(), http.StatusInternalServerError, w)
 		return
 	}
 

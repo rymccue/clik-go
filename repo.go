@@ -54,6 +54,14 @@ func HashPassword(password string, salt string) string {
 	return string(hash)
 }
 
+func DbGetUser(id int) (*User, error) {
+	user := &User{}
+	tx := db.MustBegin()
+	err := tx.Get(user, `select * from users where id = $1`, id)
+
+	return user, err
+}
+
 func DbCreateUser(user *User) error {
 	user.Salt = GenerateSalt()
 	user.Password = HashPassword(user.Password, user.Salt)
