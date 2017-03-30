@@ -76,6 +76,25 @@ func UserEdit(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserGetQueue(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		writeError("Invalid id.", http.StatusBadRequest, w)
+		return
+	}
+
+	userQueue, err := DbGetUserQueue(id)
+	if err != nil {
+		writeError(err.Error(), http.StatusNotFound, w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(userQueue); err != nil {
+		panic(err)
+	}
 }
 
 func UserGetMatches(w http.ResponseWriter, r *http.Request) {

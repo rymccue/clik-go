@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
 
@@ -80,4 +81,49 @@ func DbCreateUser(user *User) error {
 	err = tx.Get(user, `select * from users where email = $1`, user.Email)
 
 	return err
+}
+
+func DbGetUserQueue(id int) (*UserQueue, error) {
+	user, err := DbGetUser(id)
+	if err != nil {
+		return nil, err
+	}
+
+	userQueue := UserQueue{}
+
+	/*
+		Note the use of Sprintf to use the user.Age property twice. This is necessary because
+		the PrepareNamed function returns a statement using sequential $n values where property
+		values should be inserted even if you reuse the property name.
+
+		For example:
+		"users.start_age <= :Age and users.end_age >= :Age"
+		becomes
+		"users.start_age <= $1 and users.end_age >= $2"
+
+		So, instead we insert the value using Sprintf ahead of time.
+	*/
+	stmt, err := db.PrepareNamed(fmt.Sprintf(`
+	select users.*, images.*
+	from users join images
+	on users.id = images.user_id
+	where users.id not in (
+		select to_user_id
+		from decisions
+		where from_user_id = :Id
+	)
+	and users.gender = :LookingFor
+	and users.looking_for = :Gender
+	and users.start_age <= %v and users.end_age >= %v
+	and users.age between :StartAge and :EndAge
+	and images.index = 0
+	`, user.Age, user.Age))
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = stmt.Select(&userQueue, structs.Map(user))
+
+	return &userQueue, err
 }

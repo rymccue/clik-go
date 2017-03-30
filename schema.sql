@@ -40,9 +40,7 @@ create table images (
     user_id int not null references users(id),
     index int not null,
     small bool default false,
-    url char(2000) not null,
+    url varchar(2000) not null,
     created_at timestamp default current_timestamp,
-    updated_at timestamp default current_timestamp,
-    expires_at timestamp not null,
     constraint pk_image primary key (user_id, index)
 );
