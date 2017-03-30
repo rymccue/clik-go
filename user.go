@@ -1,7 +1,7 @@
 package main
 
 type User struct {
-	Id         int    `json:"id"`
+	Id         int64  `json:"id"`
 	Age        int    `json:"age"`
 	Birthday   string `json:"birthday"`
 	Career     string `json:"career"`
@@ -14,8 +14,10 @@ type User struct {
 	LastName   string `json:"last_name" db:"last_name"`
 	LookingFor string `json:"looking_for" db:"looking_for"`
 	School     string `json:"school"`
-	CreatedAt  string `json:"created_at" db:"created_at"`
-	UpdatedAt  string `json:"updated_at" db:"updated_at"`
+	CreatedAt  string `json:"-" db:"created_at"`
+	UpdatedAt  string `json:"-" db:"updated_at"`
+	Password   string `json:"-"`
+	Salt       string `json:"-"`
 }
 
 type Users []User

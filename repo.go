@@ -2,25 +2,25 @@ package main
 
 import (
 	"crypto/rand"
+	"encoding/hex"
 	"io"
 	"log"
 
-	_ "github.com/lib/pq"
-
 	"golang.org/x/crypto/scrypt"
 
-	"encoding/base32"
-	"encoding/base64"
+	_ "github.com/lib/pq"
 
 	"github.com/jmoiron/sqlx"
 )
 
-const (
-	SaltBytes = 32
-	HashBytes = 64
-)
-
 var db *sqlx.DB
+
+const (
+	SaltBytes        = 16
+	EncodedSaltBytes = 32
+	HashBytes        = 32
+	EncodedHashBytes = 64
+)
 
 func init() {
 	var err error
@@ -30,28 +30,39 @@ func init() {
 	}
 }
 
-func generateSalt(password string) ([]byte, []byte) {
-	salt := make([]byte, SaltBytes)
-	_, err := io.ReadFull(rand.Reader, salt)
+// GenerateSalt generates a random 32 byte string
+func GenerateSalt() string {
+	saltBytes := make([]byte, SaltBytes)
+	_, err := io.ReadFull(rand.Reader, saltBytes)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to generate salt.")
 	}
-
-	salt = []byte(base32.StdEncoding.EncodeToString(salt))[:SaltBytes]
-
-	hash, err := scrypt.Key([]byte(password), salt, 16384, 8, 1, HashBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hash = []byte(base64.StdEncoding.EncodeToString(hash))[:HashBytes]
-
-	return salt, hash
+	salt := make([]byte, EncodedSaltBytes)
+	hex.Encode(salt, saltBytes)
+	return string(salt)
 }
 
-func DbCreateUser(user User, password string) User {
-	salt, hash := generateSalt(password)
-	userStmt := `insert into users (age, birthday, career, email, start_age, end_age, gender, info, first_name, last_name, looking_for, school, password, salt) values ($1, to_date($2, 'YYYY-MM-DD'), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`
-	db.MustExec(userStmt, user.Age, user.Birthday, user.Career, user.Email, user.StartAge, user.EndAge, user.Gender, user.Info, user.FirstName, user.LastName, user.LookingFor, user.School, hash, salt)
-	return user
+// HashPassword hashes a string with a given salt to a 64 byte string
+func HashPassword(password string, salt string) string {
+	hashBytes, err := scrypt.Key([]byte(password), []byte(salt), 16384, 8, 1, HashBytes)
+	if err != nil {
+		log.Fatal("Failed to hash password.")
+	}
+	hash := make([]byte, EncodedHashBytes)
+	hex.Encode(hash, hashBytes)
+	return string(hash)
+}
+
+func DbCreateUser(user *User) error {
+	user.Salt = GenerateSalt()
+	user.Password = HashPassword(user.Password, user.Salt)
+	row := db.QueryRowx(`
+	insert into users
+	(age, birthday, career, email, start_age, end_age, gender, info, first_name, last_name, looking_for, school, password, salt)
+	values
+	($1, to_date($2, 'YYYY-MM-DD'), $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+	returning id
+	`, user.Age, user.Birthday, user.Career, user.Email, user.StartAge, user.EndAge, user.Gender, user.Info, user.FirstName, user.LastName, user.LookingFor, user.School, user.Password, user.Salt)
+	err := row.Scan(&user.Id)
+	return err
 }
