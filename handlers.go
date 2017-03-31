@@ -1,18 +1,40 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 
 	"strconv"
+	"time"
 )
 
 type Error struct {
 	Err string `json:"error"`
+}
+
+func getPrivateKey() []byte {
+	file, err := os.Open("keys/clik")
+	defer file.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	info, _ := file.Stat()
+	size := info.Size()
+	pembytes := make([]byte, size)
+
+	buffer := bufio.NewReader(file)
+	_, err = buffer.Read(pembytes)
+
+	return pembytes
 }
 
 func writeError(errString string, respCode int, w http.ResponseWriter) {
@@ -73,6 +95,7 @@ func UserCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserEdit(w http.ResponseWriter, r *http.Request) {
+	NotImplemented(w, r)
 }
 
 func UserGetQueue(w http.ResponseWriter, r *http.Request) {
@@ -98,10 +121,34 @@ func UserGetQueue(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserGetMatches(w http.ResponseWriter, r *http.Request) {
+	NotImplemented(w, r)
 }
 
 func DecisionCreate(w http.ResponseWriter, r *http.Request) {
+	NotImplemented(w, r)
 }
 
 func MatchDelete(w http.ResponseWriter, r *http.Request) {
+	NotImplemented(w, r)
+}
+
+func AccessToken(w http.ResponseWriter, r *http.Request) {
+	key := getPrivateKey()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iat": time.Now(),
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+	})
+	tokenString, err := token.SignedString(key)
+	if err != nil {
+		writeError(err.Error(), http.StatusInternalServerError, w)
+	}
+
+	if err := json.NewEncoder(w).Encode(tokenString); err != nil {
+		panic(err)
+	}
+}
+
+func NotImplemented(w http.ResponseWriter, r *http.Request) {
+	writeError("Not implemented.", http.StatusInternalServerError, w)
 }

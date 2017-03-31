@@ -91,4 +91,11 @@ var routes = Routes{
 		"/v1/matches/{id}",
 		MatchDelete,
 	},
+
+	Route{
+		"AccessToken",
+		"POST",
+		"/access-token",
+		AccessToken,
+	},
 }
