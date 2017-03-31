@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -19,8 +20,13 @@ type Error struct {
 	Err string `json:"error"`
 }
 
-func getPrivateKey() []byte {
-	file, err := os.Open("keys/clik")
+const (
+	privateKeyPath = "keys/clik"
+	publicKeyPath  = "keys/clik.pub"
+)
+
+func getKey(path string) []byte {
+	file, err := os.Open(path)
 	defer file.Close()
 
 	if err != nil {
@@ -46,6 +52,22 @@ func writeError(errString string, respCode int, w http.ResponseWriter) {
 }
 
 func UserGet(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		panic(err)
+	}
+	tokenString := r.Form.Get("access_token")
+	fmt.Println(tokenString)
+
+	if len(tokenString) == 0 {
+		writeError("No access token provided.", http.StatusBadRequest, w)
+		return
+	}
+
+	if !ValidateToken(tokenString) {
+		writeError("Invalid access token.", http.StatusBadRequest, w)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 
@@ -133,7 +155,7 @@ func MatchDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func AccessToken(w http.ResponseWriter, r *http.Request) {
-	key := getPrivateKey()
+	key := getKey(privateKeyPath)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iat": time.Now(),
@@ -151,4 +173,19 @@ func AccessToken(w http.ResponseWriter, r *http.Request) {
 
 func NotImplemented(w http.ResponseWriter, r *http.Request) {
 	writeError("Not implemented.", http.StatusInternalServerError, w)
+}
+
+func ValidateToken(tokenString string) bool {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return getKey(publicKeyPath), nil
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	if token.Valid {
+		return true
+	}
+	return false
 }
