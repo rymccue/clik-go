@@ -83,6 +83,14 @@ func DbCreateUser(user *User) error {
 	return err
 }
 
+/*
+DbGetUserQueue returns a queue of users that haven't been decided on by the requesting user
+based on his/her criteria.DbCreateUser
+
+This is done by joining the users and images tables, retrieving all the users that both
+match the requesting users criteria and whose criteria include the requesting users info.
+Only users that haven't been decided on by the requesting user will be returned.
+*/
 func DbGetUserQueue(id int) (*UserQueue, error) {
 	user, err := DbGetUser(id)
 	if err != nil {
