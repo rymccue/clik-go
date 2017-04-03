@@ -145,7 +145,25 @@ func UserGetQueue(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserGetMatches(w http.ResponseWriter, r *http.Request) {
-	NotImplemented(w, r)
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		writeError("Invalid id.", http.StatusBadRequest, w)
+		return
+	}
+
+	matches, err := DbGetUserMatches(id)
+	if err != nil {
+		writeError(err.Error(), http.StatusNotFound, w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(matches); err != nil {
+		panic(err)
+	}
 }
 
 func DecisionCreate(w http.ResponseWriter, r *http.Request) {

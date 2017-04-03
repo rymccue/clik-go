@@ -148,3 +148,36 @@ func DbCreateDecision(id int, decisionBody *DecisionBody) error {
 
 	return nil
 }
+
+func DbGetUserMatches(id int) (*Matches, error) {
+	user, err := DbGetUser(id)
+	if err != nil {
+		return nil, err
+	}
+
+	matches := Matches{}
+
+	stmt, err := db.PrepareNamed(fmt.Sprintf(`
+	select users.id, users.age, users.career, users.first_name, users.last_name, users.school, images.url
+	from users join images on users.id = images.user_id
+	where images.index = 0
+	and ((users.id in (
+		select user_2_id
+		from matches
+		where user_1_id = %v
+	)
+	or users.id in (
+		select user_1_id
+		from matches
+		where user_2_id = %v
+	)))
+	`, id, id))
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = stmt.Select(&matches, structs.Map(user))
+
+	return &matches, err
+}
