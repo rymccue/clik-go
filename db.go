@@ -135,3 +135,16 @@ func DbGetUserQueue(id int) (*UserQueue, error) {
 
 	return &userQueue, err
 }
+
+func DbCreateDecision(id int, decisionBody *DecisionBody) error {
+	_, err := db.NamedExec(fmt.Sprintf(`
+	insert into decisions (from_user_id, to_user_id, likes)
+	values (%d, :UserId, :Likes)
+	`, id), structs.Map(decisionBody))
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

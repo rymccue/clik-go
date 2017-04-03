@@ -19,6 +19,10 @@ type Error struct {
 	Err string `json:"error"`
 }
 
+type Success struct {
+	Result string `json:"result"`
+}
+
 const (
 	privateKeyPath = "keys/clik"
 	publicKeyPath  = "keys/clik.pub"
@@ -145,7 +149,39 @@ func UserGetMatches(w http.ResponseWriter, r *http.Request) {
 }
 
 func DecisionCreate(w http.ResponseWriter, r *http.Request) {
-	NotImplemented(w, r)
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		writeError("Invalid id.", http.StatusBadRequest, w)
+		return
+	}
+
+	var decisionBody DecisionBody
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+
+	if err := json.Unmarshal(body, &decisionBody); err != nil {
+		writeError(err.Error(), http.StatusUnprocessableEntity, w)
+		return
+	}
+
+	err = DbCreateDecision(id, &decisionBody)
+	if err != nil {
+		writeError(err.Error(), http.StatusNotFound, w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(Success{"success"}); err != nil {
+		panic(err)
+	}
 }
 
 func MatchDelete(w http.ResponseWriter, r *http.Request) {

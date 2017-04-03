@@ -78,7 +78,7 @@ var routes = Routes{
 	Route{
 		"DecisionCreate",
 		"POST",
-		"/v1/decisions/{from_user_id}",
+		"/v1/decisions/{id}",
 		DecisionCreate,
 	},
 
