@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -56,7 +55,6 @@ func UserGet(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	tokenString := r.Form.Get("access_token")
-	fmt.Println(tokenString)
 
 	if len(tokenString) == 0 {
 		writeError("No access token provided.", http.StatusBadRequest, w)
@@ -159,7 +157,6 @@ func AccessToken(w http.ResponseWriter, r *http.Request) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iat": time.Now(),
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 	tokenString, err := token.SignedString(key)
 	if err != nil {
@@ -181,7 +178,7 @@ func ValidateToken(tokenString string) bool {
 	})
 
 	if err != nil {
-		panic(err)
+		return false
 	}
 
 	if token.Valid {
