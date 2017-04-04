@@ -158,8 +158,9 @@ func DbGetUserMatches(id int) (*Matches, error) {
 	matches := Matches{}
 
 	stmt, err := db.PrepareNamed(fmt.Sprintf(`
-	select users.id, users.age, users.career, users.first_name, users.last_name, users.school, images.url
+	select users.id, users.age, users.career, users.first_name, users.last_name, users.school, images.url, matches.id as match_id
 	from users join images on users.id = images.user_id
+	join matches on users.id = matches.user_1_id or users.id = matches.user_2_id
 	where images.index = 0
 	and ((users.id in (
 		select user_2_id
