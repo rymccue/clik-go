@@ -19,7 +19,7 @@ type Error struct {
 	Err string `json:"error"`
 }
 
-type Success struct {
+type Result struct {
 	Result string `json:"result"`
 }
 
@@ -197,13 +197,31 @@ func DecisionCreate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(Success{"success"}); err != nil {
+	if err := json.NewEncoder(w).Encode(Result{"success"}); err != nil {
 		panic(err)
 	}
 }
 
 func MatchDelete(w http.ResponseWriter, r *http.Request) {
-	NotImplemented(w, r)
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		writeError("Invalid id.", http.StatusBadRequest, w)
+		return
+	}
+
+	err = DbDeleteMatch(id)
+	if err != nil {
+		writeError(err.Error(), http.StatusInternalServerError, w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(Result{"success"}); err != nil {
+		panic(err)
+	}
 }
 
 func AccessToken(w http.ResponseWriter, r *http.Request) {

@@ -182,3 +182,11 @@ func DbGetUserMatches(id int) (*Matches, error) {
 
 	return &matches, err
 }
+
+func DbDeleteMatch(id int) error {
+	_, err := db.Exec(fmt.Sprintf(`
+	delete from matches where id = %d
+	`, id))
+
+	return err
+}

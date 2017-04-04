@@ -87,7 +87,7 @@ var routes = Routes{
 	*/
 	Route{
 		"MatchDelete",
-		"DEL",
+		"DELETE",
 		"/v1/matches/{id}",
 		MatchDelete,
 	},
