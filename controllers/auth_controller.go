@@ -5,13 +5,11 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
-	"github.com/jeffmcnd/clik/auth"
 	"github.com/jeffmcnd/clik/models"
 	"github.com/jeffmcnd/clik/repos"
+	"github.com/jeffmcnd/clik/utils"
 	"github.com/jeffmcnd/clik/web/middleware"
 )
 
@@ -34,24 +32,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.Unmarshal(body, &user); err != nil {
-		WriteError(err.Error(), http.StatusUnprocessableEntity, w)
+		utils.WriteError(err.Error(), http.StatusUnprocessableEntity, w)
 		return
 	}
 
 	if err := repos.DbCreateUser(&user); err != nil {
-		WriteError(err.Error(), http.StatusInternalServerError, w)
+		utils.WriteError(err.Error(), http.StatusInternalServerError, w)
 		return
 	}
 
-	key := auth.GetKey(auth.PrivateKeyPath)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iat":   time.Now(),
-		"exp":   time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-		"email": user.Email,
-	})
-	tokenString, err := token.SignedString(key)
+	tokenString, err := utils.GenerateTokenForUser(&user)
 	if err != nil {
-		WriteError(err.Error(), http.StatusInternalServerError, w)
+		utils.WriteError(err.Error(), http.StatusInternalServerError, w)
+		return
 	}
 
 	resp := RegisterResponse{tokenString}

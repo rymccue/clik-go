@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jeffmcnd/clik/models"
 	"github.com/jeffmcnd/clik/repos"
+	"github.com/jeffmcnd/clik/utils"
 	"github.com/jeffmcnd/clik/web/middleware"
 )
 
@@ -22,7 +23,7 @@ func CreateDecisionHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["id"])
 
 	if err != nil {
-		WriteError("Invalid id.", http.StatusBadRequest, w)
+		utils.WriteError("Invalid id.", http.StatusBadRequest, w)
 		return
 	}
 
@@ -36,19 +37,19 @@ func CreateDecisionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.Unmarshal(body, &decisionForm); err != nil {
-		WriteError(err.Error(), http.StatusUnprocessableEntity, w)
+		utils.WriteError(err.Error(), http.StatusUnprocessableEntity, w)
 		return
 	}
 
 	err = repos.DbCreateDecision(id, &decisionForm)
 	if err != nil {
-		WriteError(err.Error(), http.StatusNotFound, w)
+		utils.WriteError(err.Error(), http.StatusNotFound, w)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(Result{Result: "success"}); err != nil {
+	if err := json.NewEncoder(w).Encode(utils.Result{Result: "success"}); err != nil {
 		panic(err)
 	}
 }

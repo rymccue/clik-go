@@ -8,10 +8,17 @@ import (
 	"github.com/jeffmcnd/clik/utils/crypto"
 )
 
-func DbGetUser(id int) (*models.User, error) {
+func DbGetUser(id int64) (*models.User, error) {
 	user := &models.User{}
 	tx := db.MustBegin()
 	err := tx.Get(user, `select * from users where id = $1`, id)
+	return user, err
+}
+
+func DbGetUserByEmail(email string) (*models.User, error) {
+	user := &models.User{}
+	tx := db.MustBegin()
+	err := tx.Get(user, `select * from users where email = $1`, email)
 	return user, err
 }
 
@@ -43,7 +50,7 @@ This is done by joining the users and images tables, retrieving all the users th
 match the requesting users criteria and whose criteria include the requesting users info.
 Only users that haven't been decided on by the requesting user will be returned.
 */
-func DbGetUserQueue(id int) (*models.UserQueue, error) {
+func DbGetUserQueue(id int64) (*models.UserQueue, error) {
 	user, err := DbGetUser(id)
 	if err != nil {
 		return nil, err
@@ -88,7 +95,7 @@ func DbGetUserQueue(id int) (*models.UserQueue, error) {
 	return &userQueue, err
 }
 
-func DbGetUserMatches(id int) (*models.Matches, error) {
+func DbGetUserMatches(id int64) (*models.Matches, error) {
 	user, err := DbGetUser(id)
 	if err != nil {
 		return nil, err
