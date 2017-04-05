@@ -7,7 +7,7 @@ import (
 	"github.com/jeffmcnd/clik/models"
 )
 
-func DbCreateDecision(id int, decision *models.DecisionForm) error {
+func DbCreateDecision(id int64, decision *models.DecisionForm) error {
 	_, err := db.NamedExec(fmt.Sprintf(`
 	insert into decisions (from_user_id, to_user_id, likes)
 	values (%d, :UserId, :Likes)

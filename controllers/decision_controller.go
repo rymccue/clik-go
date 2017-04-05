@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jeffmcnd/clik/models"
@@ -15,13 +14,11 @@ import (
 )
 
 func DecisionHandlers(r *mux.Router) {
-	r.Handle("/v1/decisions/{id}", middleware.NoMiddleware(CreateDecisionHandler)).Methods("POST")
+	r.Handle("/v1/decisions", middleware.AuthenticatedMiddleware(CreateDecisionHandler)).Methods("POST")
 }
 
 func CreateDecisionHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
-
+	id, err := utils.GetUserIdFromRequest(r)
 	if err != nil {
 		utils.WriteError("Invalid id.", http.StatusBadRequest, w)
 		return
