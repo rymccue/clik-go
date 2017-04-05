@@ -1,12 +1,20 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	_ "github.com/lib/pq"
+
+	"github.com/jeffmcnd/clik/repos"
+	"github.com/jeffmcnd/clik/web"
 )
 
 func main() {
-	router := NewRouter()
+	// databaseString := "user=go password=golang dbname=clik sslmode=disable"
+	databaseString := "postgres://go:golang@localhost:5432/clik?sslmode=disable"
+	repos.NewDatabaseConnection(databaseString)
 
-	log.Fatal(http.ListenAndServe(":3000", router))
+	s := web.CreateServer()
+	err := s.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
 }

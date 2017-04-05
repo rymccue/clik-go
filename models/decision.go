@@ -1,6 +1,6 @@
-package main
+package models
 
-type DecisionBody struct {
+type DecisionForm struct {
 	UserId int64 `json:"user_id"`
 	Likes  bool
 }
