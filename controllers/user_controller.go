@@ -3,19 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/jeffmcnd/clik/models"
 	"github.com/jeffmcnd/clik/repos"
 	"github.com/jeffmcnd/clik/web/middleware"
 )
 
 func UserHandlers(r *mux.Router) {
-	r.Handle("/v1/users", middleware.NoMiddleware(CreateUserHandler)).Methods("POST")
 	r.Handle("/v1/users/{id}", middleware.NoMiddleware(GetUserHandler)).Methods("GET")
 	r.Handle("/v1/users/{id}/edit", middleware.NoMiddleware(EditUserHandler)).Methods("POST")
 	r.Handle("/v1/users/{id}/queue", middleware.NoMiddleware(GetUserQueueHandler)).Methods("GET")
@@ -32,11 +28,6 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		WriteError("No access token provided.", http.StatusBadRequest, w)
 		return
 	}
-
-	// if !auth.ValidateToken(tokenString) {
-	// 	WriteError("Invalid access token.", http.StatusBadRequest, w)
-	// 	return
-	// }
 
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
@@ -56,33 +47,6 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(user); err != nil {
-		panic(err)
-	}
-}
-
-func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	var user models.User
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-	if err != nil {
-		panic(err)
-	}
-	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
-
-	if err := json.Unmarshal(body, &user); err != nil {
-		WriteError(err.Error(), http.StatusUnprocessableEntity, w)
-		return
-	}
-
-	if err := repos.DbCreateUser(&user); err != nil {
-		WriteError(err.Error(), http.StatusInternalServerError, w)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		panic(err)
 	}
