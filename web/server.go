@@ -16,6 +16,10 @@ func CreateServer() *http.Server {
 	controllers.MatchHandlers(r)
 	controllers.AuthHandlers(r)
 
+	// Messaging
+	controllers.MessageHandlers(r)
+	go controllers.HandleMessages()
+
 	return &http.Server{
 		Handler:      r,
 		Addr:         "127.0.0.1:3000",
