@@ -19,6 +19,8 @@ const (
 	PublicKeyPath  = "keys/clik.pub"
 )
 
+// TODO(jeffmcnd): encrypt and decrypt JWT payloads
+
 func GetKey(path string) []byte {
 	file, err := os.Open(path)
 	defer file.Close()
