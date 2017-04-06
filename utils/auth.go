@@ -21,7 +21,7 @@ const (
 
 // TODO(jeffmcnd): encrypt and decrypt JWT payloads
 
-func GetKey(path string) []byte {
+func getKey(path string) []byte {
 	file, err := os.Open(path)
 	defer file.Close()
 
@@ -40,11 +40,12 @@ func GetKey(path string) []byte {
 }
 
 func GenerateTokenForUser(user *models.User) (string, error) {
-	key := GetKey(PrivateKeyPath)
+	key := getKey(PrivateKeyPath)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iat":   time.Now(),
-		"exp":   time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-		"email": user.Email,
+		"iat":     time.Now(),
+		"exp":     time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+		"email":   user.Email,
+		"user_id": user.Id,
 	})
 	return token.SignedString(key)
 }
@@ -54,7 +55,7 @@ func parseToken(tokenString string) (*jwt.Token, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return GetKey(PrivateKeyPath), nil
+		return getKey(PrivateKeyPath), nil
 	})
 }
 
