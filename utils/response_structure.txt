@@ -1,0 +1,116 @@
+{
+    "meta": {
+        "code": int,
+        "error_message": ""
+    },
+    "data": {}
+}
+
+POST /decisons
+{
+    "data": {
+        "match": {
+            "id": int,
+            "first_name": "",
+            "age": int,
+            "images": [{
+                "url": "",
+                "height": int,
+                "width": int
+            }]
+        }
+    }
+}
+Notes:
+- match could be an null 
+- images will only contain one image
+
+GET /user/self/queue
+{
+    "data": {
+        "users": [{
+            "id": int,
+            "first_name": "",
+            "age": int,
+            "images": [{
+                "url": "",
+                "height": int,
+                "width": int
+            }]
+        }]
+    }
+}
+Notes:
+- users could be and empty list
+- images will only contain one image
+
+GET /user/self/matches
+{
+    "data": {
+        "matches": [{
+            "id": int,
+            "first_name": "",
+            "age": int,
+            "images": [{
+                "url": "",
+                "height": int,
+                "width": int
+            }]
+        }]
+    }
+}
+Notes:
+- matches could be an empty list
+
+GET /user/{id}
+{
+    "data": {
+        "user": {
+            "id": int,
+            "first_name": "",
+            "last_name": "",
+            "career": "",
+            "info": "",
+            "school": ""
+            "age": int,
+            "images": [{
+                "url": "",
+                "height": int,
+                "width": int
+            }]
+        }
+    }
+}
+Notes:
+- images will contain zero or more images
+- user will be null if id does not exist, error in meta
+
+GET /user/self/chats
+{
+    "data": {
+        "chats": [{
+            "id": int,
+            "user_id": int,
+            "first_name": "",
+            "last_message": "",
+            "last_message_date": date,
+            "last_message_user_id": int,
+            "image_url": ""
+        }]
+    }
+}
+
+GET /user/self/chats/{id}
+{
+    "data": {
+        "messages": [{
+            "id": int,
+            "user_id": int,
+            "message": "",
+            "message_date": date
+        }]
+    }
+}
+Notes:
+- use chat user's newest image as icon
+- messages could be empty

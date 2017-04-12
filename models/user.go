@@ -26,3 +26,6 @@ type UserQueue []struct {
 	User
 	ImageUrl
 }
+
+type UserResponse struct {
+}

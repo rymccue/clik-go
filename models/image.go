@@ -17,3 +17,11 @@ type ImageUrl struct {
 }
 
 type Images []Images
+
+type ImageResponse struct {
+	Url    string `json:"url"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+}
+
+type ImageListResponse []ImageResponse

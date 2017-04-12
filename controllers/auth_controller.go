@@ -13,10 +13,6 @@ import (
 	"github.com/jeffmcnd/clik/web/middleware"
 )
 
-type RegisterResponse struct {
-	AccessToken string `json:"access_token"`
-}
-
 func AuthHandlers(r *mux.Router) {
 	r.Handle("/register", middleware.NoMiddleware(RegisterHandler)).Methods("POST")
 }
@@ -47,7 +43,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := RegisterResponse{tokenString}
+	resp := models.RegisterResponse{user, tokenString}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
