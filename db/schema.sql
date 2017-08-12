@@ -29,11 +29,11 @@ create table decisions (
 
 create table matches (
     id serial,
-    user_1_id int not null references users(id),
-    user_2_id int not null references users(id),
+    initiated_user_id int not null references users(id),
+    accepted_user_id int not null references users(id),
     created_at timestamp default current_timestamp,
     updated_at timestamp default current_timestamp,
-    constraint pk_match primary key (user_1_id, user_2_id)
+    constraint pk_match primary key (accepted_user_id, initiated_user_id)
 );
 
 create table images (
